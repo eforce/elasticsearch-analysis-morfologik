@@ -1,9 +1,10 @@
 package pl.allegro.tech.elasticsearch.plugin.analysis.morfologik
 
-import org.elasticsearch.action.admin.indices.analyze.AnalyzeRequest
-import org.elasticsearch.common.settings.Settings
-import org.elasticsearch.common.transport.TransportAddress
-import org.elasticsearch.transport.client.PreBuiltTransportClient
+import org.apache.http.HttpHost
+import org.elasticsearch.client.RequestOptions
+import org.elasticsearch.client.RestClient
+import org.elasticsearch.client.RestHighLevelClient
+import org.elasticsearch.client.indices.AnalyzeRequest
 import pl.allegro.tech.embeddedelasticsearch.EmbeddedElastic
 import spock.lang.Specification
 
@@ -40,27 +41,25 @@ class MorfologikPluginIntegrationTest extends Specification {
 
     def "morfologik analyzer should work"() {
         expect:
-        analyzeAndGetFirstTermResult(new AnalyzeRequest()
-                .analyzer(ANALYZER_NAME)
-                .text("jestem")) == "być"
+        analyzeAndGetFirstTermResult(AnalyzeRequest.withGlobalAnalyzer(ANALYZER_NAME, "jestem")) == "być"
     }
 
     def "morfologik token filter should work"() {
         expect:
-        analyzeAndGetFirstTermResult(new AnalyzeRequest()
-                .tokenizer("standard")
-                .addTokenFilter(FILTER_NAME)
-                .text("jestem")) == "być"
+        analyzeAndGetFirstTermResult(AnalyzeRequest.buildCustomAnalyzer("standard")
+                                             .addTokenFilter(FILTER_NAME)
+                                             .build("jestem")) == "być"
     }
 
     private static String analyzeAndGetFirstTermResult(AnalyzeRequest analyzeRequest) {
-        def result = elasticsearchClient.admin().indices().analyze(analyzeRequest).get()
-        result.collect { it.term }.join(" ")
+        def result = elasticsearchClient.indices().analyze(analyzeRequest, RequestOptions.DEFAULT)
+        result.tokens.collect { it.term }.join(" ")
     }
 
     static def createClient() {
-        def transportClient = new PreBuiltTransportClient(Settings.EMPTY)
-        transportClient.addTransportAddress(new TransportAddress(InetAddress.loopbackAddress, ELS_PORT))
-        transportClient
+        def client = new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost(InetAddress.loopbackAddress, ELS_HTTP_PORT, "http")))
+        client
     }
 }

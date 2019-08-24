@@ -4,10 +4,10 @@ buildscript {
         pluginClassname = 'pl.allegro.tech.elasticsearch.plugin.analysis.morfologik.AnalysisMorfologikPlugin'
         pluginDescription = 'Morfologik Polish Lemmatizer plugin for Elasticsearch'
         versions = [
-                'elasticsearch'         : '6.8.1',
-                'lucene'                : '7.7.0',
+                'elasticsearch'         : '7.3.1',
+                'lucene'                : '8.1.0',
                 'log4j'                 : '2.11.0',
-                'embedded_elasticsearch': '2.10.0',
+                'embedded_elasticsearch': 'master-SNAPSHOT',
                 'spock'                 : '1.2-groovy-2.5',
                 'groovy'                : '2.5.2'
         ]
@@ -28,6 +28,7 @@ version = versions.elasticsearch
 
 repositories {
     mavenCentral()
+    maven { url 'https://jitpack.io' }
 }
 
 configurations {
@@ -48,8 +49,8 @@ dependencies {
     compile group: 'org.elasticsearch', name: 'elasticsearch', version: versions.elasticsearch
     compile group: 'org.apache.lucene', name: 'lucene-analyzers-morfologik', version: versions.lucene
     testCompile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: versions.log4j
-    testCompile group: 'pl.allegro.tech', name: 'embedded-elasticsearch', version: versions.embedded_elasticsearch
-    testCompile group: 'org.elasticsearch.client', name: 'transport', version: versions.elasticsearch
+    testCompile group: 'com.github.psk-ixolit', name: 'embedded-elasticsearch', version: versions.embedded_elasticsearch
+    testCompile group: 'org.elasticsearch.client', name: 'elasticsearch-rest-high-level-client', version: versions.elasticsearch
     testCompile group: 'org.spockframework', name: 'spock-core', version: versions.spock
     testCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: versions.groovy
 }
